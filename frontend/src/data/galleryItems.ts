@@ -1,0 +1,51 @@
+export const galleryItems = [
+  {
+    id: 1,
+    title: "Food Bank Volunteers",
+    category: "Volunteers",
+    date: "Mar 15, 2024",
+    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQAbsI7cl-6xndso4_Shcgyu1IogDZhTR7sw&s",
+  },
+  {
+    id: 2,
+    title: "Education Program",
+    category: "Causes",
+    date: "Mar 12, 2024",
+    image: "https://www.fisu.net/app/uploads/2023/09/p-01-1440x650.jpg",
+  },
+  {
+    id: 3,
+    title: "Community Festival",
+    category: "Events",
+    date: "Mar 10, 2024",
+    image: "https://images.theconversation.com/files/503196/original/file-20230105-15-16mdx4.jpg?ixlib=rb-4.1.0&q=45&auto=format&w=926&fit=clip",
+  },
+  {
+    id: 4,
+    title: "Healthcare Mission",
+    category: "Healthcare",
+    date: "Mar 15, 2024",
+    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQAbsI7cl-6xndso4_Shcgyu1IogDZhTR7sw&s",
+  },
+  {
+    id: 5,
+    title: "Tree Planting Drive",
+    category: "Environment",
+    date: "Mar 12, 2024",
+    image: "https://www.fisu.net/app/uploads/2023/09/p-01-1440x650.jpg",
+  },
+  {
+    id: 6,
+    title: "Team Meeting",
+    category: "Team",
+    date: "Mar 10, 2024",
+    image: "https://images.theconversation.com/files/503196/original/file-20230105-15-16mdx4.jpg?ixlib=rb-4.1.0&q=45&auto=format&w=926&fit=clip",
+  },
+  {
+    id: 7,
+    title: "Fundraising Gala",
+    category: "Fundraising",
+    date: "Mar 10, 2024",
+    image: "https://images.theconversation.com/files/503196/original/file-20230105-15-16mdx4.jpg?ixlib=rb-4.1.0&q=45&auto=format&w=926&fit=clip",
+  },
+];
