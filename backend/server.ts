@@ -1,50 +1,50 @@
 import express, { Request, Response } from 'express';
-import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
+import cors from 'cors';
 
 const app = express();
 const PORT = 5000;
 
-// Path to gallery.json
-const GALLERY_PATH = path.join(__dirname, 'gallery.json');
-
 app.use(cors());
 app.use(express.json());
 
-// Helper to read JSON file
-const readGallery = (): any[] => {
-  const data = fs.readFileSync(GALLERY_PATH, 'utf-8');
-  return JSON.parse(data);
-};
+const dataPath = path.join(__dirname, 'galleryData.json');
 
-// Helper to write JSON file
-const writeGallery = (data: any[]) => {
-  fs.writeFileSync(GALLERY_PATH, JSON.stringify(data, null, 2), 'utf-8');
-};
+// Helper: Load all items
+function loadGallery() {
+  if (!fs.existsSync(dataPath)) return [];
+  const raw = fs.readFileSync(dataPath, 'utf-8');
+  return JSON.parse(raw);
+}
 
-// GET all gallery items
+// Helper: Save all items
+function saveGallery(items: any[]) {
+  fs.writeFileSync(dataPath, JSON.stringify(items, null, 2));
+}
+
+// ✅ GET: Fetch all gallery items
 app.get('/api/gallery', (req: Request, res: Response) => {
-  const items = readGallery();
-  res.json(items);
+  const data = loadGallery();
+  res.json(data);
 });
 
-// DELETE gallery item by id
+// ❌ DELETE: Delete gallery item by ID
 app.delete('/api/gallery/:id', (req: Request, res: Response) => {
   const { id } = req.params;
-  let items = readGallery();
+  const items = loadGallery();
 
-  const itemIndex = items.findIndex(item => item.id === id);
-  if (itemIndex === -1) {
+  const index = items.findIndex((item: any) => item.id === id);
+  if (index === -1) {
     return res.status(404).json({ message: 'Item not found' });
   }
 
-  items.splice(itemIndex, 1); // Remove the item
-  writeGallery(items);
+  items.splice(index, 1);
+  saveGallery(items);
 
   res.json({ message: 'Item deleted successfully' });
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`✅ Server running on http://localhost:${PORT}`);
 });
