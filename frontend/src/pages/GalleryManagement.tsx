@@ -4,9 +4,8 @@ import { ChevronRight, Upload, Loader2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import GalleryGrid from '../components/GalleryGrid';
-import { GalleryService } from '../services/galleryService';
+import { GalleryService } from '../services/GalleryService';
 import type { GalleryItem, GalleryCategory } from '../types/gallery';
-import { galleryItems as staticGalleryItems } from '../data/galleryItems'; // import your static data
 
 const categories: GalleryCategory[] = [
   'All Categories',
@@ -31,32 +30,18 @@ export default function GalleryManagement(): JSX.Element {
       setLoading(true);
       setError(null);
 
-      // Try fetching from Supabase first
-      let items: GalleryItem[] = [];
-      try {
-        items = await GalleryService.getAll(category !== 'All Categories' ? category : undefined);
-      } catch (supabaseError) {
-        console.warn('Supabase fetch failed, using static data:', supabaseError);
-      }
+      const items = await GalleryService.getAll();
 
-      if (!items || items.length === 0) {
-        // Use static data if Supabase returns nothing
-        items =
-          category === 'All Categories'
-            ? staticGalleryItems
-            : staticGalleryItems.filter(item => item.category === category);
-      }
+      // filter by category if not "All Categories"
+      const filtered =
+        category === 'All Categories'
+          ? items
+          : items.filter(item => item.category === category);
 
-      setGalleryItems(items);
+      setGalleryItems(filtered);
     } catch (err) {
       console.error('Error fetching gallery items:', err);
       setError('Failed to load gallery images. Please try again.');
-      // fallback to static data on error
-      const fallbackItems =
-        category === 'All Categories'
-          ? staticGalleryItems
-          : staticGalleryItems.filter(item => item.category === category);
-      setGalleryItems(fallbackItems);
     } finally {
       setLoading(false);
     }

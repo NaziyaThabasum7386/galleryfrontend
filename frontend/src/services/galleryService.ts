@@ -1,108 +1,80 @@
 // src/services/GalleryService.ts
 import type { GalleryItem, GalleryUpload } from '../types/gallery';
 
-const STORAGE_KEY = 'gallery_items';
+const API_URL = 'http://localhost:5000/api/gallery';
 
 export class GalleryService {
   /**
-   * Fetch all gallery images, optionally filtered by category
+   * Fetch all gallery images
    */
-  static async getAll(category?: string): Promise<GalleryItem[]> {
-    const items = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]') as GalleryItem[];
-
-    if (category && category !== 'All Categories') {
-      return items.filter(item => item.category === category);
-    }
-
-    return items.sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
+  static async getAll(): Promise<GalleryItem[]> {
+    const res = await fetch(API_URL);
+    if (!res.ok) throw new Error('Failed to fetch gallery items');
+    return res.json();
   }
 
   /**
    * Get a single gallery image by ID
    */
   static async getById(id: string): Promise<GalleryItem | null> {
-    const items = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]') as GalleryItem[];
-    return items.find(item => item.id === id) || null;
+    const res = await fetch(`${API_URL}/${id}`);
+    if (!res.ok) return null;
+    return res.json();
   }
 
   /**
-   * "Upload" image (store locally using object URL)
-   */
-  static async uploadImage(file: File): Promise<string> {
-    return new Promise(resolve => {
-      const reader = new FileReader();
-      reader.onload = e => resolve(e.target?.result as string);
-      reader.readAsDataURL(file); // store as Base64 for simplicity
-    });
-  }
-
-  /**
-   * Create a new gallery image entry
+   * Create a new gallery image entry (optional for future)
    */
   static async create(upload: GalleryUpload): Promise<GalleryItem> {
-    const items = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]') as GalleryItem[];
+    const formData = new FormData();
+    formData.append('title', upload.title);
+    formData.append('category', upload.category);
+    formData.append('description', upload.description || '');
+    formData.append('file', upload.file);
 
-    const imageUrl = await this.uploadImage(upload.file);
-    const newItem: GalleryItem = {
-      id: Date.now().toString(),
-      title: upload.title,
-      category: upload.category,
-      description: upload.description || '',
-      image_url: imageUrl,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      body: formData,
+    });
 
-    items.push(newItem);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-
-    return newItem;
+    if (!res.ok) throw new Error('Failed to create gallery item');
+    return res.json();
   }
 
   /**
-   * Update an existing gallery image
+   * Update an existing gallery image (optional for future)
    */
   static async update(
     id: string,
     updates: Partial<Omit<GalleryItem, 'id' | 'created_at'>>
   ): Promise<GalleryItem> {
-    const items = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]') as GalleryItem[];
-    const index = items.findIndex(item => item.id === id);
+    const res = await fetch(`${API_URL}/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    });
 
-    if (index === -1) throw new Error('Item not found');
-
-    items[index] = {
-      ...items[index],
-      ...updates,
-      updated_at: new Date().toISOString(),
-    };
-
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-    return items[index];
+    if (!res.ok) throw new Error('Failed to update gallery item');
+    return res.json();
   }
 
   /**
    * Delete a gallery image
    */
   static async delete(id: string): Promise<void> {
-    const items = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]') as GalleryItem[];
-    const updated = items.filter(item => item.id !== id);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to delete gallery item');
   }
 
   /**
    * Get count of images by category
    */
   static async getCountByCategory(): Promise<Record<string, number>> {
-    const items = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]') as GalleryItem[];
-
+    const items = await this.getAll();
     const counts: Record<string, number> = {};
     items.forEach(item => {
       counts[item.category] = (counts[item.category] || 0) + 1;
     });
-
     return counts;
   }
 }
